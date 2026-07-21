@@ -15,6 +15,10 @@ Gem::Specification.new do |spec|
   spec.files = Dir.glob("{lib,test}/**/*") + %w[README.md Rakefile Gemfile]
   spec.require_paths = ["lib"]
 
+  spec.add_runtime_dependency "pg_query", "~> 6.0"
+  spec.add_runtime_dependency "pg", "~> 1.5"
+  spec.add_runtime_dependency "concurrent-ruby", "~> 1.3"
+
   spec.add_development_dependency "minitest", "~> 5.0"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "bundler-audit", "~> 0.9"
