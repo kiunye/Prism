@@ -14,6 +14,10 @@ module Prism
   VERSION = "0.1.0"
 
   def self.configure(&block)
-    Configuration.configure(&block)
+    @config = Configuration.configure(&block)
+  end
+
+  def self.config
+    @config
   end
 end
