@@ -3,3 +3,5 @@ source "https://rubygems.org"
 gemspec
 
 gem "prism-core", path: "../prism-core"
+gem "sqlite3", group: :test
+gem "tzinfo-data", platforms: %i[windows]
