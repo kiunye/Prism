@@ -63,10 +63,10 @@ module Prism
         @validator.validate(sql)
       end
 
-      def explain(sql, variables: {}, values: {})
+      def explain(sql, variables: {}, values: {}, connection_slug: nil)
         param_sql, params = prepare(sql, variables, values)
 
-        result = @connection_manager.with_connection do |conn|
+        result = @connection_manager.with_connection(connection_slug) do |conn|
           conn.exec_params("EXPLAIN (FORMAT JSON, ANALYZE false) #{param_sql}", params.values)
         end
 
@@ -113,9 +113,9 @@ module Prism
         @rows.each(&block)
       end
 
-      def to_csv(io = $stdout)
+      def to_csv
         require "csv"
-        CSV(io) do |csv|
+        CSV.generate do |csv|
           csv << @columns
           @rows.each { |row| csv << @columns.map { |c| row[c] } }
         end

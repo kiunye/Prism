@@ -34,8 +34,15 @@ class ShareTokenTest < ActiveSupport::TestCase
   end
 
   test "should not be accessible when expired" do
-    @share_token.expires_at = 1.hour.ago
     @share_token.save!
+    @share_token.update_column(:expires_at, 1.hour.ago)
+
     assert_not @share_token.accessible?
+  end
+
+  test "cannot be created already expired" do
+    @share_token.expires_at = 1.hour.ago
+
+    assert_not @share_token.valid?
   end
 end

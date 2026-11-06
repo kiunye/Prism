@@ -41,6 +41,10 @@ module PrismWeb
         !token[1].match?(/data/)
     end
 
+    def adhoc_variables(sql)
+      sql.to_s.scan(/\{\{(\w+)\}\}/).flatten.uniq.map { |name| { name: name, type: :string } }
+    end
+
     def connection_manager
       @connection_manager ||= Prism::Core::ConnectionManager.new(Prism.config)
     end
@@ -48,7 +52,7 @@ module PrismWeb
     def query_engine
       @query_engine ||= Prism::Core::QueryEngine.new(
         connection_manager: connection_manager,
-        timeout: Prism.config.query.timeout,
+        timeout: Prism.config.query.timeout * 1000,
         max_rows: Prism.config.query.max_rows
       )
     end

@@ -39,7 +39,8 @@ module PrismWeb
 
         result = query_engine.execute(
           saved_query.sql,
-          variables: variables.to_h,
+          variables: adhoc_variables(saved_query.sql),
+          values: variables.to_h,
           connection_slug: saved_query.connection_slug
         )
 
