@@ -1,0 +1,8 @@
+<% content_for :title, "#{@table_schema[:name]} Schema" %>
+
+<nav class="prism-breadcrumb">
+  <%= link_to "Schema Browser", schema_browser_path %> &rarr;
+  <span><%= @table_schema[:name] %></span>
+</nav>
+
+<%= render "table", table_schema: @table_schema %>

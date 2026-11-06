@@ -7,6 +7,7 @@ require "prism/core/connection_manager"
 require "prism/core/statement_validator"
 require "prism/core/variable_interpolator"
 require "prism/core/query_engine"
+require "prism/core/schema_inspector"
 require "prism/core/schema_context_builder"
 
 module Prism

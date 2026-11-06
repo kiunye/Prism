@@ -1,0 +1,16 @@
+<div class="prism-table-list">
+  <% if tables.empty? %>
+    <p class="empty">No tables visible to your account.</p>
+  <% else %>
+    <ul>
+      <% tables.each do |table_name| %>
+        <li>
+          <%= link_to table_name,
+                      connection_table_path(slug: @connection_slug, table: table_name),
+                      target: "_top",
+                      data: { turbo_frame: "schema-table-detail" } %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

@@ -145,13 +145,13 @@ module Prism
       @resolver = nil
     end
 
-    def allowed_tables(connection_slug, owner)
-      tables = case mode
-               when :allowlist then @allowlist
-               when :denylist  then all_tables(connection_slug) - @denylist
-               when :dynamic   then @resolver.call(connection_slug, owner)
-               end
-      (tables - SYSTEM_DENYLIST).sort
+    def filter(connection_slug, owner, actual_tables)
+      allowed = case mode
+                when :allowlist then @allowlist
+                when :denylist  then actual_tables - @denylist.to_a
+                when :dynamic   then @resolver.call(connection_slug, owner, actual_tables)
+                end
+      ((allowed - SYSTEM_DENYLIST.to_a) & actual_tables).sort
     end
 
     def validate!
@@ -159,13 +159,6 @@ module Prism
       errors << "invalid visibility mode" unless MODES.include?(mode)
       errors << "dynamic mode requires resolver" if mode == :dynamic && !resolver
       errors
-    end
-
-    private
-
-    def all_tables(connection_slug)
-      # This will be populated by SchemaInspector
-      []
     end
   end
 
