@@ -9,6 +9,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: prism_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -18,8 +28,14 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
 
+      - name: Create read-only role
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d prism_test -c "CREATE ROLE prism_ro LOGIN PASSWORD 'prism_ro'; GRANT CONNECT ON DATABASE prism_test TO prism_ro; GRANT USAGE ON SCHEMA public TO prism_ro;"
+
       - name: Test prism-core
         working-directory: ./prism-core
+        env:
+          PRISM_TEST_DATABASE_URL: postgres://prism_ro:prism_ro@localhost:5432/prism_test
         run: bundle exec rake test
 
       - name: Test prism-web
