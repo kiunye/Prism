@@ -99,3 +99,14 @@ class QueryEngineTest < Minitest::Test
     assert_equal :timeout, error.code
   end
 end
+
+class QueryResultTest < Minitest::Test
+  def test_to_csv_returns_a_csv_string
+    result = Prism::Core::QueryResult.new(
+      rows: [{ "a" => "1", "b" => "x,y" }], columns: %w[a b], row_count: 1,
+      duration_ms: 1, truncated: false, query_id: "q", connection_slug: "primary"
+    )
+
+    assert_equal "a,b\n1,\"x,y\"\n", result.to_csv
+  end
+end

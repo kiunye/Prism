@@ -6,7 +6,6 @@ module PrismWeb
 
     def validate
       sql = params[:query]
-      variables = params[:variables]&.to_unsafe_h || {}
 
       result = query_engine.validate(sql)
       render json: {
@@ -23,12 +22,13 @@ module PrismWeb
 
     def execute
       sql = params[:query]
-      variables = params[:variables]&.to_unsafe_h || {}
+      values = params[:variables]&.to_unsafe_h || {}
       connection_slug = params[:connection_slug].presence
 
       result = query_engine.execute(
         sql,
-        variables: variables,
+        variables: adhoc_variables(sql),
+        values: values,
         connection_slug: connection_slug
       )
 
@@ -53,9 +53,7 @@ module PrismWeb
           response.headers["Content-Type"] = "text/csv"
           response.headers["Content-Disposition"] =
             "attachment; filename=\"query_#{result.query_id}.csv\""
-          csv_body = result.to_csv.dup
-          csv_body.rewind
-          self.response_body = csv_body.read
+          render plain: result.to_csv
         end
       end
     rescue Prism::QueryError => e
@@ -64,12 +62,13 @@ module PrismWeb
 
     def explain
       sql = params[:query]
-      variables = params[:variables]&.to_unsafe_h || {}
+      values = params[:variables]&.to_unsafe_h || {}
       connection_slug = params[:connection_slug].presence
 
       result = query_engine.explain(
         sql,
-        variables: variables,
+        variables: adhoc_variables(sql),
+        values: values,
         connection_slug: connection_slug
       )
 
