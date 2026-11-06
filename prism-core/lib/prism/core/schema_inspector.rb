@@ -11,8 +11,8 @@ module Prism
         @cache = cache || SchemaCache.new
       end
 
-      def tables(connection_slug)
-        @cache.fetch("tables:#{connection_slug}", expires_in: 1.hour) do
+      def tables(connection_slug, owner: nil)
+        @cache.fetch("tables:#{connection_slug}:#{owner_cache_key(owner)}", expires_in: 1.hour) do
           @connections.with_connection(connection_slug) do |conn|
             result = conn.exec_params(<<~SQL)
               SELECT table_name
@@ -21,12 +21,12 @@ module Prism
                 AND table_type = 'BASE TABLE'
             SQL
             all_tables = result.to_a.map { |r| r["table_name"] }
-            @visibility.allowed_tables(connection_slug, Current.owner)
+            @visibility.filter(connection_slug, owner, all_tables)
           end
         end
       end
 
-      def columns(connection_slug, table_name)
+      def columns(connection_slug, table_name, owner: nil)
         @cache.fetch("columns:#{connection_slug}:#{table_name}", expires_in: 1.hour) do
           @connections.with_connection(connection_slug) do |conn|
             cols = conn.exec_params(<<~SQL, [table_name]).to_a
@@ -64,10 +64,40 @@ module Prism
         end
       end
 
-      def foreign_keys(connection_slug, tables)
+      def indexes(connection_slug, table_name, owner: nil)
+        @cache.fetch("indexes:#{connection_slug}:#{table_name}", expires_in: 1.hour) do
+          @connections.with_connection(connection_slug) do |conn|
+            conn.exec_params(<<~SQL, [table_name]).to_a
+              SELECT
+                i.relname AS index_name,
+                a.attname AS column_name,
+                am.amname AS index_type,
+                idx.indisunique AS is_unique,
+                idx.indisprimary AS is_primary
+              FROM pg_index idx
+              JOIN pg_class c ON c.oid = idx.indrelid
+              JOIN pg_class i ON i.oid = idx.indexrelid
+              JOIN pg_am am ON am.oid = i.relam
+              JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = ANY(idx.indkey)
+              WHERE c.relname = $1
+              ORDER BY i.relname, a.attnum
+            SQL
+          end.map do |r|
+            {
+              name: r["index_name"],
+              column: r["column_name"],
+              type: r["index_type"],
+              unique: r["is_unique"] == "t" || r["is_unique"] == true,
+              primary: r["is_primary"] == "t" || r["is_primary"] == true
+            }
+          end
+        end
+      end
+
+      def foreign_keys(connection_slug, tables, owner: nil)
         return [] if tables.empty?
 
-        placeholders = tables.map { |t| "'#{t}'" }.join(",")
+        placeholders = tables.map { |t| "'#{t.gsub("'", "''")}'" }.join(",")
 
         @cache.fetch("fks:#{connection_slug}:#{tables.sort.join(",")}", expires_in: 1.hour) do
           @connections.with_connection(connection_slug) do |conn|
@@ -91,7 +121,7 @@ module Prism
         end
       end
 
-      def sample_rows(connection_slug, table_name, limit: 3, max_columns: 5)
+      def sample_rows(connection_slug, table_name, limit: 3, max_columns: 5, owner: nil)
         @connections.with_connection(connection_slug) do |conn|
           cols = conn.exec_params("SELECT * FROM #{conn.quote_ident(table_name)} LIMIT 0").fields
           selected_cols = cols.first(max_columns)
@@ -103,6 +133,13 @@ module Prism
             LIMIT #{limit}
           SQL
         end
+      end
+
+      private
+
+      def owner_cache_key(owner)
+        return "anon" if owner.nil?
+        "#{owner[:type]}_#{owner[:id]}"
       end
     end
 

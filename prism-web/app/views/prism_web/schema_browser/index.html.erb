@@ -1,0 +1,35 @@
+<% content_for :title, "Schema Browser" %>
+
+<div class="prism-schema-browser"
+     data-controller="schema-browser"
+     data-connection-slug="<%= @connection_slug %>">
+
+  <header class="prism-header">
+    <h1>Schema Browser</h1>
+
+    <%= form_with url: schema_browser_path, method: :get, local: true, class: "connection-selector" do |f| %>
+      <label for="connection_slug">Connection:</label>
+      <%= f.select :connection_slug,
+                   Prism.config.connections.map(&:slug),
+                   { selected: @connection_slug },
+                   { onchange: "this.form.submit()" } %>
+    <% end %>
+  </header>
+
+  <div class="prism-layout">
+    <aside class="prism-sidebar">
+      <h2>Tables</h2>
+
+      <%= turbo_frame_tag "schema-tables",
+                          src: connection_schema_path(slug: @connection_slug) do %>
+        <p class="loading">Loading tables...</p>
+      <% end %>
+    </aside>
+
+    <main class="prism-main">
+      <%= turbo_frame_tag "schema-table-detail" do %>
+        <p class="empty-state">Select a table to view its schema.</p>
+      <% end %>
+    </main>
+  </div>
+</div>

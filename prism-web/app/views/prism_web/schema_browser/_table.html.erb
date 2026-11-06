@@ -1,0 +1,105 @@
+<div class="prism-table-schema">
+  <header class="prism-table-header">
+    <h2><%= @table_schema[:name] %></h2>
+
+    <% if @table_schema[:foreign_keys].present? %>
+      <span class="badge"><%= @table_schema[:foreign_keys].size %> foreign keys</span>
+    <% end %>
+
+    <span class="badge"><%= @table_schema[:columns].size %> columns</span>
+  </header>
+
+  <table class="prism-columns-table">
+    <thead>
+      <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Nullable</th>
+        <th>Default</th>
+        <th>PK</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @table_schema[:columns].each do |column| %>
+        <tr>
+          <td><code><%= column[:name] %></code></td>
+          <td><span class="data-type"><%= column[:data_type] %></span></td>
+          <td><%= column[:nullable] ? "YES" : "NO" %></td>
+          <td><code><%= column[:default] %></code></td>
+          <td><%= column[:primary_key] ? "🔑" : "" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <% if @table_schema[:foreign_keys].present? %>
+    <section class="prism-fk-section">
+      <h3>Foreign Keys</h3>
+      <ul>
+        <% @table_schema[:foreign_keys].each do |fk| %>
+          <li>
+            <%= link_to connection_table_path(slug: @connection_slug, table: fk["to_table"]),
+                        data: { turbo_frame: "schema-table-detail" },
+                        class: "prism-fk-link" do %>
+              <code><%= fk["from_table"] %>.<%= fk["from_column"] %></code>
+              &rarr;
+              <code><%= fk["to_table"] %>.<%= fk["to_column"] %></code>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <% if @table_schema[:indexes].present? %>
+    <section class="prism-indexes-section">
+      <h3>Indexes</h3>
+      <table class="prism-indexes-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Unique</th>
+            <th>Primary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @table_schema[:indexes].each do |idx| %>
+            <tr>
+              <td><code><%= idx[:name] %></code></td>
+              <td><code><%= idx[:column] %></code></td>
+              <td><span class="data-type"><%= idx[:type] %></span></td>
+              <td><%= idx[:unique] ? "YES" : "NO" %></td>
+              <td><%= idx[:primary] ? "🔑" : "" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+  <% end %>
+
+  <% if @table_schema[:sample_rows].present? && @table_schema[:sample_rows].any? %>
+    <section class="prism-sample-section">
+      <h3>Sample Data</h3>
+      <table class="prism-sample-table">
+        <thead>
+          <tr>
+            <% @table_schema[:columns].first(5).each do |col| %>
+              <th><%= col[:name] %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @table_schema[:sample_rows].each do |row| %>
+            <tr>
+              <% @table_schema[:columns].first(5).each do |col| %>
+                <td><%= row[col[:name]] %></td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+  <% end %>
+</div>

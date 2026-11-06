@@ -13,19 +13,19 @@ module Prism
       end
 
       def build_raw(connection_slug)
-        tables = @inspector.tables(connection_slug)
+        tables = @inspector.tables(connection_slug, owner: nil)
         return "No tables visible." if tables.empty?
 
         tables_data = tables.map do |table|
           {
             table: table,
-            columns: @inspector.columns(connection_slug, table),
-            primary_key: @inspector.columns(connection_slug, table).select { |c| c[:primary_key] }.map { |c| c[:name] },
-            sample: @inspector.sample_rows(connection_slug, table)
+            columns: @inspector.columns(connection_slug, table, owner: nil),
+            primary_key: @inspector.columns(connection_slug, table, owner: nil).select { |c| c[:primary_key] }.map { |c| c[:name] },
+            sample: @inspector.sample_rows(connection_slug, table, owner: nil)
           }
         end
 
-        fks = @inspector.foreign_keys(connection_slug, tables)
+        fks = @inspector.foreign_keys(connection_slug, tables, owner: nil)
 
         render_context(tables_data, fks)
       end

@@ -1,0 +1,63 @@
+<% content_for :title, "SQL Editor" %>
+
+<div class="prism-sql-editor" data-controller="sql-editor">
+  <header class="prism-header">
+    <h1>SQL Editor</h1>
+    <div class="prism-actions">
+      <button type="button"
+              data-action="click->sql-editor#validateQuery"
+              class="prism-btn prism-btn-secondary">
+        Validate (Ctrl+S)
+      </button>
+      <button type="button"
+              data-action="click->sql-editor#executeQuery"
+              class="prism-btn prism-btn-primary">
+        Run (Ctrl+Enter)
+      </button>
+      <button type="button"
+              data-action="click->sql-editor#explainQuery"
+              class="prism-btn prism-btn-secondary">
+        Explain
+      </button>
+      <button type="button"
+              data-action="click->sql-editor#exportCsv"
+              class="prism-btn prism-btn-tertiary">
+        Export CSV
+      </button>
+    </div>
+  </header>
+
+  <div class="prism-editor-layout">
+    <div class="prism-editor-main">
+      <div data-sql-editor-target="editor"
+           class="prism-codemirror-host"
+           data-codemirror-mode="sql"
+           data-codemirror-line-numbers="true"></div>
+
+      <div data-sql-editor-target="variables"
+           class="prism-variables"
+           style="display: none;">
+        <h3>Variables</h3>
+        <div class="prism-variable-chips"></div>
+      </div>
+
+      <div data-sql-editor-target="errors"
+           class="prism-errors"
+           style="display: none;">
+        <h3>Validation Errors</h3>
+      </div>
+
+      <div data-sql-editor-target="results"
+           class="prism-results"
+           style="display: none;">
+        <h3>Results</h3>
+      </div>
+
+      <div data-sql-editor-target="explain"
+           class="prism-explain"
+           style="display: none;">
+        <h3>Query Plan</h3>
+      </div>
+    </div>
+  </div>
+</div>

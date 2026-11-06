@@ -17,6 +17,9 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "rails", ">= 8.0", "< 9.0"
   spec.add_runtime_dependency "prism-core", "~> 0.1"
+  spec.add_runtime_dependency "turbo-rails", ">= 2.0", "< 3.0"
+  spec.add_runtime_dependency "stimulus-rails", ">= 1.0", "< 2.0"
+  spec.add_runtime_dependency "importmap-rails", ">= 2.0", "< 3.0"
 
   spec.add_development_dependency "minitest", "~> 5.0"
   spec.add_development_dependency "rake", "~> 13.0"
