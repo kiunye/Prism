@@ -2,6 +2,8 @@ module PrismWeb
   class ApplicationController < ::ActionController::Base
     include Current
 
+    protect_from_forgery with: :exception
+
     before_action :authenticate_prism!
 
     private

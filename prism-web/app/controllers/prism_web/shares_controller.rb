@@ -35,7 +35,7 @@ module PrismWeb
       case @share_token.resource_type
       when "SavedQuery"
         saved_query = SavedQuery.find(@share_token.resource_id)
-        variables = params[:variables]&.permit! || {}
+        variables = params[:variables]&.to_unsafe_h || {}
 
         result = query_engine.execute(
           saved_query.sql,
